@@ -72,6 +72,10 @@
         button:hover {
             background-color: #2980b9;
         }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
         .topic-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -114,6 +118,14 @@
             text-align: center;
             margin: 20px 0;
         }
+        #loadingStatus {
+            text-align: center;
+            margin: 10px 0;
+            color: #3498db;
+            padding: 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -132,6 +144,10 @@
         <h1>Scripture Companion</h1>
         <p class="tagline">Sabedoria Bíblica Personalizada Para Sua Jornada</p>
     </header>
+
+    <div id="loadingStatus">
+        Carregando a Bíblia...
+    </div>
 
     <div class="container">
         <div class="search-panel">
@@ -167,7 +183,35 @@
     </footer>
 
     <script>
-        // Simulação da base de conhecimento para demonstração
+        // Global variable to hold the Bible data
+        let bibleData = null;
+
+        // Function to load the Bible data
+        async function loadBibleData() {
+            try {
+                const response = await fetch('blivre.json');
+                bibleData = await response.json();
+                console.log('Bible data loaded successfully');
+                // Enable the search button once data is loaded
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('loadingStatus').textContent = 'Bíblia carregada com sucesso!';
+                setTimeout(() => {
+                    document.getElementById('loadingStatus').style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('Error loading Bible:', error);
+                document.getElementById('loadingStatus').textContent = 'Erro ao carregar a Bíblia. Por favor, recarregue a página.';
+                document.getElementById('loadingStatus').style.color = 'red';
+            }
+        }
+
+        // Load the Bible data when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchBtn').disabled = true;
+            loadBibleData();
+        });
+
+        // Simulação da base de conhecimento para fallback
         const knowledgeBase = {
             "Perdão": {
                 guidance: "Perdoar é uma das virtudes mais importantes ensinadas na Bíblia. O perdão liberta não apenas a pessoa que é perdoada, mas também aquele que perdoa. Cristo nos ensina que devemos perdoar repetidamente, sem limites. A capacidade de perdoar vem quando reconhecemos quanto Deus nos perdoou.",
@@ -283,13 +327,61 @@
             "Ansiedade": ["ansiedade", "preocupação", "medo", "estresse", "angústia", "pânico", "nervoso"]
         };
 
-        // Mockup da função de busca no JSON da Bíblia
-        // Em uma implementação real, você faria a busca no arquivo JSON
-        async function mockSearchBible(query) {
-            // Simulando uma busca na Bíblia baseada em palavras-chave
+        // Function to search the Bible for relevant verses
+        function searchBibleForKeywords(keywords) {
+            if (!bibleData || !bibleData.books) {
+                console.error('Bible data not loaded');
+                return [];
+            }
+
+            const results = [];
+            const searchTerms = keywords.toLowerCase().split(' ');
+
+            // Search through each book, chapter, and verse
+            bibleData.books.forEach(book => {
+                if (book.chapters) {
+                    book.chapters.forEach((chapter, chapterIndex) => {
+                        if (chapter.verses) {
+                            chapter.verses.forEach((verse, verseIndex) => {
+                                const verseText = verse.text ? verse.text.toLowerCase() : '';
+                                
+                                // Check if any of the search terms are in the verse
+                                if (searchTerms.some(term => term.length > 3 && verseText.includes(term))) {
+                                    results.push({
+                                        book: book.name,
+                                        chapter: chapterIndex + 1,
+                                        verse: verseIndex + 1,
+                                        text: verse.text,
+                                        reference: `${book.name} ${chapterIndex + 1}:${verseIndex + 1}`
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Limit to top 3 most relevant results
+            return results.slice(0, 3);
+        }
+
+        // Main search function that uses the Bible data
+        async function performBibleSearch(query) {
+            // Check if Bible data is loaded
+            if (!bibleData) {
+                return {
+                    guidance: "Os dados da Bíblia ainda não foram carregados. Por favor, aguarde ou recarregue a página.",
+                    scriptures: []
+                };
+            }
+
+            // Determine topic from query
             const lowercaseQuery = query.toLowerCase();
             
-            // Determinar qual tópico melhor corresponde à consulta
+            // Find matching scriptures directly from the Bible data
+            const relevantScriptures = searchBibleForKeywords(lowercaseQuery);
+            
+            // Determine which topic it might be related to
             let bestMatchTopic = null;
             let maxMatches = 0;
             
@@ -301,53 +393,26 @@
                 }
             }
             
-            // Se não encontrou correspondência, usar um tópico padrão
-            if (!bestMatchTopic || maxMatches === 0) {
-                // Detectar situações específicas
-                if (lowercaseQuery.includes("divórcio") || lowercaseQuery.includes("separação")) {
-                    bestMatchTopic = "Família";
-                } else if (lowercaseQuery.includes("equilibrar") || lowercaseQuery.includes("equilíbrio")) {
-                    return {
-                        guidance: "A Bíblia nos ensina sobre a importância do equilíbrio em nossas vidas. Deus nos criou para trabalhar, mas também para descansar e dedicar tempo à família e a Ele. Buscar o Reino de Deus em primeiro lugar nos ajuda a manter as prioridades corretas, colocando Deus no centro, família em seguida, e então nossas responsabilidades profissionais.",
-                        scriptures: [
-                            {
-                                reference: "Mateus 6:33",
-                                text: "Busquem, pois, em primeiro lugar o Reino de Deus e a sua justiça, e todas essas coisas lhes serão acrescentadas."
-                            },
-                            {
-                                reference: "Eclesiastes 3:1-4",
-                                text: "Para tudo há uma ocasião, e um tempo para cada propósito debaixo do céu: tempo de nascer e tempo de morrer, tempo de plantar e tempo de arrancar o que se plantou, tempo de matar e tempo de curar, tempo de derrubar e tempo de construir, tempo de chorar e tempo de rir, tempo de prantear e tempo de dançar."
-                            },
-                            {
-                                reference: "Marcos 6:31",
-                                text: "Então, porque havia muita gente chegando e saindo, a ponto de eles não terem tempo para comer, Jesus lhes disse: 'Venham comigo para um lugar deserto e descansem um pouco'."
-                            }
-                        ]
-                    };
-                } else {
-                    // Fornecer orientação geral se não encontrar correspondência específica
-                    return {
-                        guidance: "A Bíblia é rica em sabedoria para todas as áreas de nossas vidas. Quando enfrentamos desafios, podemos buscar orientação na Palavra de Deus e na oração. Confie que Deus está com você em todas as circunstâncias da vida.",
-                        scriptures: [
-                            {
-                                reference: "Provérbios 3:5-6",
-                                text: "Confie no Senhor de todo o seu coração e não se apoie em seu próprio entendimento; reconheça o Senhor em todos os seus caminhos, e ele endireitará as suas veredas."
-                            },
-                            {
-                                reference: "Salmos 119:105",
-                                text: "A tua palavra é lâmpada para os meus pés e luz para o meu caminho."
-                            },
-                            {
-                                reference: "Romanos 8:28",
-                                text: "Sabemos que Deus age em todas as coisas para o bem daqueles que o amam, dos que foram chamados de acordo com o seu propósito."
-                            }
-                        ]
-                    };
-                }
+            // Create a response with guidance and found scriptures
+            let guidance = "";
+            
+            if (bestMatchTopic && knowledgeBase[bestMatchTopic]) {
+                guidance = knowledgeBase[bestMatchTopic].guidance;
+            } else {
+                guidance = "A Bíblia contém sabedoria para todas as áreas da vida. Aqui estão algumas passagens que podem ser relevantes para sua pergunta.";
             }
             
-            // Retornar a orientação para o tópico encontrado
-            return knowledgeBase[bestMatchTopic];
+            // Use found scriptures or fallback to defaults
+            const scriptures = relevantScriptures.length > 0 ? 
+                relevantScriptures.map(s => ({ reference: s.reference, text: s.text })) : 
+                (bestMatchTopic && knowledgeBase[bestMatchTopic]) ? 
+                    knowledgeBase[bestMatchTopic].scriptures : 
+                    knowledgeBase["Fé"].scriptures;
+            
+            return {
+                guidance: guidance,
+                scriptures: scriptures
+            };
         }
 
         // Função para formatar a resposta
@@ -378,68 +443,51 @@
             const userQuestion = document.getElementById('userQuestion').value.trim();
             
             if (userQuestion) {
-                // Mostrar indicador de carregamento
+                // Show loading indicator
                 document.getElementById('loadingIndicator').classList.remove('hidden');
                 document.getElementById('resultContent').innerHTML = '';
                 
-                // Simulando um pequeno atraso para dar sensação de processamento
+                // Perform the actual search
                 setTimeout(async () => {
-                    const response = await mockSearchBible(userQuestion);
+                    const response = await performBibleSearch(userQuestion);
                     document.getElementById('loadingIndicator').classList.add('hidden');
                     document.getElementById('resultContent').innerHTML = formatResponse(response);
-                }, 1500);
+                }, 1000);
             }
         });
 
-        // Adicionar event listeners para os botões de tópicos
+        // Topic button event listeners
         document.querySelectorAll('.topic-btn').forEach(button => {
             button.addEventListener('click', async () => {
                 const topic = button.getAttribute('data-topic');
                 document.getElementById('userQuestion').value = `Me ajude com o tema: ${topic}`;
                 
-                // Mostrar indicador de carregamento
+                // Show loading indicator
                 document.getElementById('loadingIndicator').classList.remove('hidden');
                 document.getElementById('resultContent').innerHTML = '';
                 
-                // Simulando um pequeno atraso para dar sensação de processamento
-                setTimeout(() => {
-                    const response = knowledgeBase[topic];
+                // If we have Bible data, search for relevant passages
+                setTimeout(async () => {
+                    let response;
+                    if (bibleData) {
+                        response = await performBibleSearch(`Me ajude com o tema: ${topic}`);
+                    } else {
+                        // Fallback to predefined content if Bible data not loaded
+                        response = knowledgeBase[topic];
+                    }
                     document.getElementById('loadingIndicator').classList.add('hidden');
                     document.getElementById('resultContent').innerHTML = formatResponse(response);
                 }, 1000);
             });
         });
 
-        // Ao pressionar Enter no textarea, aciona a busca
+        // Enter key event listener
         document.getElementById('userQuestion').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 document.getElementById('searchBtn').click();
             }
         });
-
-        // Seria aqui que você carregaria o JSON da Bíblia
-        // Em uma implementação real:
-        /*
-        async function loadBibleData() {
-            try {
-                // Em uma aplicação real, este seria um caminho relativo ou URL
-                const response = await fetch('blivre.json');
-                const bibleData = await response.json();
-                // Processar os dados da Bíblia
-                console.log('Dados da Bíblia carregados com sucesso');
-                return bibleData;
-            } catch (error) {
-                console.error('Erro ao carregar a Bíblia:', error);
-                return null;
-            }
-        }
-
-        // Carregar os dados da Bíblia quando a página carregar
-        window.addEventListener('DOMContentLoaded', () => {
-            loadBibleData();
-        });
-        */
     </script>
 </body>
 </html>
