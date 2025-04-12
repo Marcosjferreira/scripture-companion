@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scripture Companion: Sabedoria Bíblica Personalizada</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .search-panel {
+            flex: 1;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .result-panel {
+            flex: 2;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .topic-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .topic-btn {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .topic-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        .result-content {
+            margin-top: 20px;
+        }
+        .scripture-reference {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .scripture-text {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 20px;
+        }
+        .guidance-text {
+            line-height: 1.8;
+        }
+        .hidden {
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Scripture Companion</h1>
+        <p class="tagline">Sabedoria Bíblica Personalizada Para Sua Jornada</p>
+    </header>
+
+    <div class="container">
+        <div class="search-panel">
+            <h2>Como posso ajudar você hoje?</h2>
+            <textarea id="userQuestion" placeholder="Descreva sua situação ou pergunta (ex: 'Estou lutando para perdoar alguém' ou 'Como equilibrar trabalho e família?')"></textarea>
+            
+            <button id="searchBtn">Buscar Orientação Bíblica</button>
+            
+            <div class="topic-buttons">
+                <h3>Tópicos Populares:</h3>
+                <button class="topic-btn" data-topic="Perdão">Perdão</button>
+                <button class="topic-btn" data-topic="Família">Família</button>
+                <button class="topic-btn" data-topic="Trabalho">Trabalho</button>
+                <button class="topic-btn" data-topic="Fé">Fé</button>
+                <button class="topic-btn" data-topic="Relacionamentos">Relacionamentos</button>
+                <button class="topic-btn" data-topic="Ansiedade">Ansiedade</button>
+            </div>
+        </div>
+        
+        <div class="result-panel">
+            <h2>Orientação Bíblica</h2>
+            <div id="loadingIndicator" class="loading hidden">
+                Buscando sabedoria nas escrituras...
+            </div>
+            <div id="resultContent" class="result-content">
+                <p>Digite sua pergunta ou selecione um tópico para receber orientação baseada nas escrituras.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Scripture Companion &copy; 2025 - Orientação baseada na Bíblia Livre</p>
+    </footer>
+
+    <script>
+        // Simulação da base de conhecimento para demonstração
+        const knowledgeBase = {
+            "Perdão": {
+                guidance: "Perdoar é uma das virtudes mais importantes ensinadas na Bíblia. O perdão liberta não apenas a pessoa que é perdoada, mas também aquele que perdoa. Cristo nos ensina que devemos perdoar repetidamente, sem limites. A capacidade de perdoar vem quando reconhecemos quanto Deus nos perdoou.",
+                scriptures: [
+                    {
+                        reference: "Mateus 18:21-22",
+                        text: "Então Pedro aproximou-se de Jesus e perguntou: "Senhor, quantas vezes deverei perdoar a meu irmão quando ele pecar contra mim? Até sete vezes?" Jesus respondeu: "Eu digo a você: Não até sete, mas até setenta vezes sete."
+                    },
+                    {
+                        reference: "Colossenses 3:13",
+                        text: "Suportem-se uns aos outros e perdoem as queixas que tiverem uns contra os outros. Perdoem como o Senhor lhes perdoou."
+                    },
+                    {
+                        reference: "Efésios 4:31-32",
+                        text: "Livrem-se de toda amargura, indignação e ira, gritaria e calúnia, bem como de toda maldade. Sejam bondosos e compassivos uns para com os outros, perdoando-se mutuamente, assim como Deus perdoou vocês em Cristo."
+                    }
+                ]
+            },
+            "Família": {
+                guidance: "A Bíblia nos ensina que a família é uma instituição divina. Os pais devem instruir seus filhos nos caminhos do Senhor, e os filhos devem honrar seus pais. O amor, respeito e compromisso mútuo são os pilares de uma família abençoada.",
+                scriptures: [
+                    {
+                        reference: "Provérbios 22:6",
+                        text: "Instrua a criança no caminho em que deve andar, e até quando envelhecer não se desviará dele."
+                    },
+                    {
+                        reference: "Efésios 6:1-4",
+                        text: "Filhos, obedeçam a seus pais no Senhor, pois isso é justo. 'Honra teu pai e tua mãe' — este é o primeiro mandamento com promessa — 'para que tudo te corra bem e tenhas longa vida sobre a terra'. Pais, não irritem seus filhos; antes, criem-nos segundo a instrução e o conselho do Senhor."
+                    },
+                    {
+                        reference: "Colossenses 3:18-21",
+                        text: "Mulheres, sujeitem-se a seus maridos, como convém no Senhor. Maridos, amem suas mulheres e não as tratem com amargura. Filhos, obedeçam a seus pais em tudo, pois isso agrada ao Senhor. Pais, não irritem seus filhos, para que eles não fiquem desanimados."
+                    }
+                ]
+            },
+            "Trabalho": {
+                guidance: "Deus nos chama para trabalhar com excelência, como se estivéssemos trabalhando para Ele. O trabalho é uma bênção que nos permite prover para nossas necessidades e abençoar aos outros. Devemos buscar equilíbrio entre trabalho e descanso, lembrando que nossa identidade não está no que fazemos, mas em quem somos em Cristo.",
+                scriptures: [
+                    {
+                        reference: "Colossenses 3:23-24",
+                        text: "Tudo o que fizerem, façam de todo o coração, como para o Senhor, e não para os homens, sabendo que receberão do Senhor a recompensa da herança. É a Cristo, o Senhor, que vocês estão servindo."
+                    },
+                    {
+                        reference: "2 Tessalonicenses 3:10-12",
+                        text: "Quando ainda estávamos com vocês, lhes ordenamos isto: se alguém não quiser trabalhar, também não coma. Ouvimos que alguns de vocês estão ociosos; não trabalham, mas andam se intrometendo na vida alheia. A tais pessoas ordenamos e exortamos no Senhor Jesus Cristo que trabalhem tranquilamente e comam o seu próprio pão."
+                    },
+                    {
+                        reference: "Provérbios 14:23",
+                        text: "Todo trabalho árduo traz proveito, mas o só falar leva à pobreza."
+                    }
+                ]
+            },
+            "Fé": {
+                guidance: "A fé é confiar em Deus mesmo quando não podemos ver o resultado. É a certeza daquilo que esperamos e a convicção das coisas que não vemos. Nossa fé cresce quando experimentamos Deus agindo em nossas vidas e quando estudamos Sua Palavra.",
+                scriptures: [
+                    {
+                        reference: "Hebreus 11:1",
+                        text: "Ora, a fé é a certeza daquilo que esperamos e a prova das coisas que não vemos."
+                    },
+                    {
+                        reference: "Romanos 10:17",
+                        text: "Consequentemente, a fé vem por ouvir a mensagem, e a mensagem é ouvida mediante a palavra de Cristo."
+                    },
+                    {
+                        reference: "Tiago 2:17",
+                        text: "Assim também a fé, por si só, se não for acompanhada de obras, está morta."
+                    }
+                ]
+            },
+            "Relacionamentos": {
+                guidance: "Os relacionamentos saudáveis são marcados pelo amor, respeito e honestidade. A Bíblia nos ensina a amar os outros como Cristo nos amou - com sacrifício e generosidade. Somos chamados a perdoar, a colocar os outros acima de nós mesmos e a buscar a paz.",
+                scriptures: [
+                    {
+                        reference: "João 13:34-35",
+                        text: "Um novo mandamento lhes dou: Amem-se uns aos outros. Como eu os amei, vocês devem amar-se uns aos outros. Com isso todos saberão que vocês são meus discípulos, se vocês se amarem uns aos outros."
+                    },
+                    {
+                        reference: "Filipenses 2:3-4",
+                        text: "Nada façam por ambição egoísta ou por vaidade, mas humildemente considerem os outros superiores a si mesmos. Cada um cuide, não somente dos seus interesses, mas também dos interesses dos outros."
+                    },
+                    {
+                        reference: "1 Coríntios 13:4-7",
+                        text: "O amor é paciente, o amor é bondoso. Não inveja, não se vangloria, não se orgulha. Não maltrata, não procura seus interesses, não se ira facilmente, não guarda rancor. O amor não se alegra com a injustiça, mas se alegra com a verdade. Tudo sofre, tudo crê, tudo espera, tudo suporta."
+                    }
+                ]
+            },
+            "Ansiedade": {
+                guidance: "Deus entende nossas preocupações e ansiedades. Ele nos convida a entregar nossos fardos a Ele através da oração e a confiar que Ele cuida de nós. A paz de Deus, que excede todo entendimento, pode guardar nossos corações e mentes em Cristo Jesus.",
+                scriptures: [
+                    {
+                        reference: "Filipenses 4:6-7",
+                        text: "Não andem ansiosos por coisa alguma, mas em tudo, pela oração e súplicas, e com ação de graças, apresentem seus pedidos a Deus. E a paz de Deus, que excede todo o entendimento, guardará os seus corações e as suas mentes em Cristo Jesus."
+                    },
+                    {
+                        reference: "1 Pedro 5:7",
+                        text: "Lancem sobre ele toda a sua ansiedade, porque ele tem cuidado de vocês."
+                    },
+                    {
+                        reference: "Mateus 6:25-27",
+                        text: "Portanto eu lhes digo: não se preocupem com suas próprias vidas, quanto ao que comer ou beber; nem com seus próprios corpos, quanto ao que vestir. Não é a vida mais importante do que a comida, e o corpo mais importante do que a roupa? Observem as aves do céu: não semeiam nem colhem nem armazenam em celeiros; contudo, o Pai celestial as alimenta. Não têm vocês muito mais valor do que elas? Quem de vocês, por mais que se preocupe, pode acrescentar uma hora que seja à sua vida?"
+                    }
+                ]
+            }
+        };
+
+        // Palavras-chave para correspondência de tópicos
+        const keywordMap = {
+            "Perdão": ["perdoar", "perdão", "mágoa", "ressentimento", "ofensa", "magoar"],
+            "Família": ["família", "casamento", "filhos", "pais", "esposo", "esposa", "matrimônio", "divórcio"],
+            "Trabalho": ["trabalho", "emprego", "carreira", "profissão", "negócio", "ocupação"],
+            "Fé": ["fé", "crer", "confiança", "dúvida", "acreditar", "confiar"],
+            "Relacionamentos": ["relacionamento", "amizade", "casal", "namoro", "amigos", "amor"],
+            "Ansiedade": ["ansiedade", "preocupação", "medo", "estresse", "angústia", "pânico", "nervoso"]
+        };
+
+        // Mockup da função de busca no JSON da Bíblia
+        // Em uma implementação real, você faria a busca no arquivo JSON
+        async function mockSearchBible(query) {
+            // Simulando uma busca na Bíblia baseada em palavras-chave
+            const lowercaseQuery = query.toLowerCase();
+            
+            // Determinar qual tópico melhor corresponde à consulta
+            let bestMatchTopic = null;
+            let maxMatches = 0;
+            
+            for (const [topic, keywords] of Object.entries(keywordMap)) {
+                const matches = keywords.filter(keyword => lowercaseQuery.includes(keyword)).length;
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    bestMatchTopic = topic;
+                }
+            }
+            
+            // Se não encontrou correspondência, usar um tópico padrão
+            if (!bestMatchTopic || maxMatches === 0) {
+                // Detectar situações específicas
+                if (lowercaseQuery.includes("divórcio") || lowercaseQuery.includes("separação")) {
+                    bestMatchTopic = "Família";
+                } else if (lowercaseQuery.includes("equilibrar") || lowercaseQuery.includes("equilíbrio")) {
+                    return {
+                        guidance: "A Bíblia nos ensina sobre a importância do equilíbrio em nossas vidas. Deus nos criou para trabalhar, mas também para descansar e dedicar tempo à família e a Ele. Buscar o Reino de Deus em primeiro lugar nos ajuda a manter as prioridades corretas, colocando Deus no centro, família em seguida, e então nossas responsabilidades profissionais.",
+                        scriptures: [
+                            {
+                                reference: "Mateus 6:33",
+                                text: "Busquem, pois, em primeiro lugar o Reino de Deus e a sua justiça, e todas essas coisas lhes serão acrescentadas."
+                            },
+                            {
+                                reference: "Eclesiastes 3:1-4",
+                                text: "Para tudo há uma ocasião, e um tempo para cada propósito debaixo do céu: tempo de nascer e tempo de morrer, tempo de plantar e tempo de arrancar o que se plantou, tempo de matar e tempo de curar, tempo de derrubar e tempo de construir, tempo de chorar e tempo de rir, tempo de prantear e tempo de dançar."
+                            },
+                            {
+                                reference: "Marcos 6:31",
+                                text: "Então, porque havia muita gente chegando e saindo, a ponto de eles não terem tempo para comer, Jesus lhes disse: 'Venham comigo para um lugar deserto e descansem um pouco'."
+                            }
+                        ]
+                    };
+                } else {
+                    // Fornecer orientação geral se não encontrar correspondência específica
+                    return {
+                        guidance: "A Bíblia é rica em sabedoria para todas as áreas de nossas vidas. Quando enfrentamos desafios, podemos buscar orientação na Palavra de Deus e na oração. Confie que Deus está com você em todas as circunstâncias da vida.",
+                        scriptures: [
+                            {
+                                reference: "Provérbios 3:5-6",
+                                text: "Confie no Senhor de todo o seu coração e não se apoie em seu próprio entendimento; reconheça o Senhor em todos os seus caminhos, e ele endireitará as suas veredas."
+                            },
+                            {
+                                reference: "Salmos 119:105",
+                                text: "A tua palavra é lâmpada para os meus pés e luz para o meu caminho."
+                            },
+                            {
+                                reference: "Romanos 8:28",
+                                text: "Sabemos que Deus age em todas as coisas para o bem daqueles que o amam, dos que foram chamados de acordo com o seu propósito."
+                            }
+                        ]
+                    };
+                }
+            }
+            
+            // Retornar a orientação para o tópico encontrado
+            return knowledgeBase[bestMatchTopic];
+        }
+
+        // Função para formatar a resposta
+        function formatResponse(responseData) {
+            let html = `<div class="guidance-text">${responseData.guidance}</div>`;
+            
+            html += `<h3>Passagens Bíblicas Relacionadas:</h3>`;
+            
+            responseData.scriptures.forEach(scripture => {
+                html += `
+                <div class="scripture-text">
+                    <span class="scripture-reference">${scripture.reference}</span>
+                    <p>${scripture.text}</p>
+                </div>`;
+            });
+            
+            html += `
+            <div class="additional-guidance">
+                <h3>Aplicação Prática:</h3>
+                <p>Reflita sobre estas passagens em oração. Peça a Deus sabedoria para aplicar estes princípios à sua situação específica. Lembre-se que a comunidade de fé também pode oferecer apoio e orientação adicional.</p>
+            </div>`;
+            
+            return html;
+        }
+
+        // Event Listeners
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const userQuestion = document.getElementById('userQuestion').value.trim();
+            
+            if (userQuestion) {
+                // Mostrar indicador de carregamento
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('resultContent').innerHTML = '';
+                
+                // Simulando um pequeno atraso para dar sensação de processamento
+                setTimeout(async () => {
+                    const response = await mockSearchBible(userQuestion);
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    document.getElementById('resultContent').innerHTML = formatResponse(response);
+                }, 1500);
+            }
+        });
+
+        // Adicionar event listeners para os botões de tópicos
+        document.querySelectorAll('.topic-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+                const topic = button.getAttribute('data-topic');
+                document.getElementById('userQuestion').value = `Me ajude com o tema: ${topic}`;
+                
+                // Mostrar indicador de carregamento
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('resultContent').innerHTML = '';
+                
+                // Simulando um pequeno atraso para dar sensação de processamento
+                setTimeout(() => {
+                    const response = knowledgeBase[topic];
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    document.getElementById('resultContent').innerHTML = formatResponse(response);
+                }, 1000);
+            });
+        });
+
+        // Ao pressionar Enter no textarea, aciona a busca
+        document.getElementById('userQuestion').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        // Seria aqui que você carregaria o JSON da Bíblia
+        // Em uma implementação real:
+        /*
+        async function loadBibleData() {
+            try {
+                // Em uma aplicação real, este seria um caminho relativo ou URL
+                const response = await fetch('blivre.json');
+                const bibleData = await response.json();
+                // Processar os dados da Bíblia
+                console.log('Dados da Bíblia carregados com sucesso');
+                return bibleData;
+            } catch (error) {
+                console.error('Erro ao carregar a Bíblia:', error);
+                return null;
+            }
+        }
+
+        // Carregar os dados da Bíblia quando a página carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBibleData();
+        });
+        */
+    </script>
+</body>
+</html>
