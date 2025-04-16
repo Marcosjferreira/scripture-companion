@@ -484,38 +484,35 @@ function findJsonErrorLocation(jsonText, error) {
             }
         });
 
-        // Topic button event listeners
-        document.querySelectorAll('.topic-btn').forEach(button => {
-            button.addEventListener('click', async () => {
-                const topic = button.getAttribute('data-topic');
-                document.getElementById('userQuestion').value = `Me ajude com o tema: ${topic}`;
-                
-                // Show loading indicator
-                document.getElementById('loadingIndicator').classList.remove('hidden');
-                document.getElementById('resultContent').innerHTML = '';
-                
-                // If we have Bible data, search for relevant passages
-                setTimeout(async () => {
-                    let response;
-                    if (bibleData) {
-                        response = await performBibleSearch(`Me ajude com o tema: ${topic}`);
-                    } else {
-                        // Fallback to predefined content if Bible data not loaded
-                        response = knowledgeBase[topic];
-                    }
-                    document.getElementById('loadingIndicator').classList.add('hidden');
-                    document.getElementById('resultContent').innerHTML = formatResponse(response);
-                }, 1000);
-            });
-        });
-
-        // Enter key event listener
-        document.getElementById('userQuestion').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('searchBtn').click();
+// Topic button event listeners - updated version
+document.querySelectorAll('.topic-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+        const topic = button.getAttribute('data-topic');
+        document.getElementById('userQuestion').value = `Me ajude com o tema: ${topic}`;
+        
+        // Show loading indicator
+        document.getElementById('loadingIndicator').classList.remove('hidden');
+        document.getElementById('resultContent').innerHTML = '';
+        
+        setTimeout(async () => {
+            try {
+                // Try to use performBibleSearch which handles both states
+                const response = await performBibleSearch(`Me ajude com o tema: ${topic}`);
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('resultContent').innerHTML = formatResponse(response);
+            } catch (error) {
+                console.error("Error processing topic click:", error);
+                // Fallback directly to the knowledgeBase as a last resort
+                const fallbackResponse = {
+                    guidance: knowledgeBase[topic].guidance,
+                    scriptures: knowledgeBase[topic].scriptures
+                };
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('resultContent').innerHTML = formatResponse(fallbackResponse);
             }
-        });
+        }, 1000);
+    });
+});
     </script>
 </body>
 </html>
